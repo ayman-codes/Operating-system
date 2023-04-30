@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 // Define a node structure for the binary tree
 struct Node {
@@ -18,27 +19,37 @@ struct BinaryTree {
 };
 
 // Traverse the binary tree in-order and print each node's data
-void traverse_in_order(struct Node* node) {
+void trav_order(struct Node* node) {
     if (node != NULL) {
-        traverse_in_order(node->left);
+        trav_order(node->left);
         printf("%d ", node->data);
-        traverse_in_order(node->right);
+        trav_order(node->right);
     }
 }
 
 // Insert a new node with the given data into the binary tree
-void insert(struct BinaryTree* tree, int data) {
+void insert_node(struct BinaryTree* tree, int data) {
+
+    //define the node
     struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    
+    //node's parameters
     new_node->data = data;
     new_node->left = NULL;
     new_node->right = NULL;
 
+    //if root is null then assign the new node to the root
     if (tree->root == NULL) {
         tree->root = new_node;
-    } else {
+    } 
+    else {
+        //Check for each root and if the data are larger than the current
+        //assign the current node (to be searched) to the child left node
+        //if it's also null then make it a root and assign data to it
         struct Node* current = tree->root;
         struct Node* parent = NULL;
-        while (1) {
+        
+        while (true) {
             parent = current;
             if (data < current->data) {
                 current = current->left;
@@ -46,7 +57,8 @@ void insert(struct BinaryTree* tree, int data) {
                     parent->left = new_node;
                     return;
                 }
-            } else {
+            } 
+            else {
                 current = current->right;
                 if (current == NULL) {
                     parent->right = new_node;
@@ -60,14 +72,15 @@ void insert(struct BinaryTree* tree, int data) {
 // Search for a node with the given data in the binary tree and return a pointer to that node
 struct Node* search(struct BinaryTree* tree, int data) {
     struct Node* current = tree->root;
+    //not the target
     while (current != NULL && current->data != data) {
         if (data < current->data) {
-            current = current->left;
+            current = current->left; //look in the left node
         } else {
-            current = current->right;
+            current = current->right; // look in the right node
         }
     }
-    return current;
+    return current; //reached target return
 }
 
 // Thread function for inserting random values into the binary tree
@@ -76,30 +89,57 @@ void* insert_thread(void* arg) {
     int i;
     for (i = 0; i < 10; i++) {
         int value = rand() % 100;
-        printf("Inserting %d...\n", value);
-        insert(tree, value);
+        printf("Inserting node: %d\n", value);
+        insert_node(tree, value);
         printf("Tree after insertion:\n");
-        traverse_in_order(tree->root);
-        printf("\n");
+        trav_order(tree->root);
+        printf("\n\n");
     }
     pthread_exit(NULL);
 }
 
 // Thread function for searching random values in the binary tree
-void* search_thread(void* arg) {
+void* search_thread(void* arg) 
+{
     struct BinaryTree* tree = (struct BinaryTree*)arg;
+
     int i;
     for (i = 0; i < 10; i++) {
         int value = rand() % 100;
         printf("Searching for %d...\n", value);
         struct Node* result = search(tree, value);
+
         if (result == NULL) {
-            printf("%d not found in tree\n", value);
-        } else {
-            printf("%d found in tree\n", value);
+            printf("%d not found in tree\n\n", value);
+        } 
+        else {
+            printf("%d found in tree\n\n", value);
         }
     }
     pthread_exit(NULL);
+}
+
+// Helper function to print spaces
+void print_spaces(int count) {
+
+    for (int i = 0; i < count; i++) {
+        printf(" ");
+    }
+}
+
+// Recursive function to print binary tree as a tree structure
+void print_tree(struct Node* node, int level) {
+    if (node != NULL) {
+        print_tree(node->right, level + 1);
+
+        int i;
+        for (i = 0; i < level; i++) {
+            printf("\t");
+        }
+        printf("%d\n", node->data);
+
+        print_tree(node->left, level + 1);
+    }
 }
 
 int main() {
@@ -127,6 +167,8 @@ int main() {
     // Wait for the insert and search threads to finish
     pthread_join(insert_thread_id, NULL);
     pthread_join(search_thread_id, NULL);
+
+    print_tree(tree.root, 0);
 
     return 0;
 }
