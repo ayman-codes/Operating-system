@@ -28,6 +28,11 @@
 </blockquote>
 
 
+<p style="text-align: center;">
+    <img src="https://iq.opengenus.org/content/images/2021/01/binary-tree2.png" width="800" align="center"/>
+</p>
+
+
 <h2 style='background:deeppink; border:0; color:white'><center>Code Explanation</center></h2>
 Let's separate the code into blocks
 <blockquote>
